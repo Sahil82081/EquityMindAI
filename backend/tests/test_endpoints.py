@@ -28,3 +28,4 @@ def test_health_get_and_head():
     head_res = client.head("/api/v1/health")
     assert head_res.status_code == 200
     assert head_res.text == ""
+

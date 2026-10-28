@@ -12,19 +12,34 @@ from app.schemas.financial import (
 logger = logging.getLogger(__name__)
 
 
-def _format_currency_compact(val: Optional[float]) -> str:
-    """Format large numbers into $T, $B, $M compact representations."""
+def _get_currency_symbol(currency: Optional[str]) -> str:
+    """Return currency symbol based on ISO code."""
+    c = (currency or "USD").upper()
+    if c == "INR":
+        return "₹"
+    elif c == "EUR":
+        return "€"
+    elif c == "GBP":
+        return "£"
+    elif c == "JPY":
+        return "¥"
+    return "$"
+
+
+def _format_currency_compact(val: Optional[float], currency: str = "USD") -> str:
+    """Format large numbers into compact representations."""
     if val is None or val == 0:
         return "N/A"
     abs_val = abs(val)
     sign = "-" if val < 0 else ""
+    sym = _get_currency_symbol(currency)
     if abs_val >= 1e12:
-        return f"{sign}${abs_val / 1e12:.2f}T"
+        return f"{sign}{sym}{abs_val / 1e12:.2f}T"
     if abs_val >= 1e9:
-        return f"{sign}${abs_val / 1e9:.1f}B"
+        return f"{sign}{sym}{abs_val / 1e9:.1f}B"
     if abs_val >= 1e6:
-        return f"{sign}${abs_val / 1e6:.1f}M"
-    return f"{sign}${abs_val:,.2f}"
+        return f"{sign}{sym}{abs_val / 1e6:.1f}M"
+    return f"{sign}{sym}{abs_val:,.2f}"
 
 
 def _format_percentage(val: Optional[float], include_sign: bool = True) -> str:
@@ -43,11 +58,12 @@ def _format_ratio(val: Optional[float]) -> str:
     return f"{val:.1f}"
 
 
-def _format_price(val: Optional[float]) -> str:
+def _format_price(val: Optional[float], currency: str = "USD") -> str:
     """Format share price."""
     if val is None:
         return "N/A"
-    return f"${val:.2f}"
+    sym = _get_currency_symbol(currency)
+    return f"{sym}{val:,.2f}"
 
 
 class MarketDataService:
@@ -115,12 +131,13 @@ class MarketDataService:
             if prev_close is None:
                 prev_close = current_price
 
+            quote_currency = getattr(fast_info, "currency", None) or info.get("currency") or "USD"
             price_change = current_price - prev_close
             price_change_pct = (price_change / prev_close) if prev_close else 0.0
 
             change_dir = "up" if price_change >= 0 else "down"
             change_sign = "+" if price_change >= 0 else ""
-            formatted_price = _format_price(current_price)
+            formatted_price = _format_price(current_price, quote_currency)
             formatted_change = f"{change_sign}{price_change_pct * 100:.2f}%"
 
             quote = PriceQuote(
@@ -128,7 +145,7 @@ class MarketDataService:
                 previous_close=round(prev_close, 2),
                 price_change=round(price_change, 2),
                 price_change_percent=round(price_change_pct * 100, 2),
-                currency=info.get("currency", "USD"),
+                currency=quote_currency,
                 formatted_price=formatted_price,
                 formatted_change=formatted_change,
                 change_direction=change_dir,
@@ -158,13 +175,13 @@ class MarketDataService:
 
             fundamentals = FundamentalMetrics(
                 market_cap=market_cap,
-                formatted_market_cap=_format_currency_compact(market_cap),
+                formatted_market_cap=_format_currency_compact(market_cap, quote_currency),
                 revenue=total_revenue,
-                formatted_revenue=_format_currency_compact(total_revenue),
+                formatted_revenue=_format_currency_compact(total_revenue, quote_currency),
                 net_income=net_income,
-                formatted_net_income=_format_currency_compact(net_income),
+                formatted_net_income=_format_currency_compact(net_income, quote_currency),
                 eps=eps,
-                formatted_eps=_format_price(eps) if eps is not None else "N/A",
+                formatted_eps=_format_price(eps, quote_currency) if eps is not None else "N/A",
                 pe_ratio=pe,
                 formatted_pe=_format_ratio(pe),
                 operating_margin=operating_margin,

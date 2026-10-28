@@ -36,7 +36,10 @@ class LLMService:
         if self._initialized and self._client:
             return
         self._api_key = settings.GEMINI_API_KEY or os.environ.get("GEMINI_API_KEY")
-        if not self._api_key:
+        if not self._api_key or self._api_key.startswith("AQ.") or "your-gemini" in self._api_key.lower():
+            logger.info("Gemini API key not configured or contains placeholder/auth token. Operating in deterministic pipeline mode.")
+            self._initialized = True
+            self._client = None
             return
         self._initialized = True
 
@@ -65,37 +68,49 @@ class LLMService:
             self._client = None
 
     def generate_text(self, prompt: str) -> Optional[str]:
-        """Generate text using Gemini with automatic multi-model fallback."""
+        """Generate text using Gemini with strict timeout and automatic fallback."""
         self._init_client()
         if not self._client:
             return None
 
-        # Prioritize configured model, followed by known available fast models
+        # Prioritize configured model, followed by fast models
         candidates = [settings.GEMINI_MODEL]
-        for fallback in ["gemini-3.5-flash", "gemini-3.8-flash", "gemini-2.5-flash", "gemini-1.5-flash"]:
+        for fallback in ["gemini-3.8-flash", "gemini-flash-latest", "gemini-2.5-flash-lite"]:
             if fallback not in candidates:
                 candidates.append(fallback)
 
-        for m in candidates:
-            try:
-                if getattr(self, "_client_type", "") == "genai":
-                    response = self._client.models.generate_content(
-                        model=m,
-                        contents=prompt,
-                    )
-                    if response and response.text:
-                        return response.text.strip()
-                elif getattr(self, "_client_type", "") == "legacy":
-                    if hasattr(self, "_genai_legacy"):
-                        model_inst = self._genai_legacy.GenerativeModel(m)
-                        response = model_inst.generate_content(prompt)
-                    else:
-                        response = self._client.generate_content(prompt)
-                    if response and response.text:
-                        return response.text.strip()
-            except Exception as e:
-                logger.debug(f"Gemini generation with {m} failed: {e}")
-                continue
+        def _call_model(model_name: str) -> Optional[str]:
+            if getattr(self, "_client_type", "") == "genai":
+                response = self._client.models.generate_content(
+                    model=model_name,
+                    contents=prompt,
+                )
+                if response and response.text:
+                    return response.text.strip()
+            elif getattr(self, "_client_type", "") == "legacy":
+                if hasattr(self, "_genai_legacy"):
+                    model_inst = self._genai_legacy.GenerativeModel(model_name)
+                    response = model_inst.generate_content(prompt)
+                else:
+                    response = self._client.generate_content(prompt)
+                if response and response.text:
+                    return response.text.strip()
+            return None
+
+        import concurrent.futures
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+            for m in candidates:
+                future = executor.submit(_call_model, m)
+                try:
+                    res = future.result(timeout=4.0)
+                    if res:
+                        return res
+                except concurrent.futures.TimeoutError:
+                    logger.warning(f"Gemini call with {m} timed out after 4.0s. Falling back to deterministic algorithms.")
+                    break
+                except Exception as e:
+                    logger.debug(f"Gemini generation with {m} failed: {e}")
+                    continue
 
         return None
 
