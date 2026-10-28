@@ -1,5 +1,5 @@
 import React, { useState, useRef, useMemo, useEffect } from 'react';
-import type { FinancialData, RevenueYearItem } from '../types';
+import type { Company, FinancialData, RevenueYearItem } from '../types';
 import { SAMPLE_FINANCIAL_DATA } from '../services/mockData';
 
 const W = 640;
@@ -9,9 +9,25 @@ const MONTHS = ['Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', '
 
 interface DataTabProps {
   financialData?: FinancialData | null;
+  company?: Company | null;
 }
 
-export const DataTab: React.FC<DataTabProps> = ({ financialData }) => {
+export const DataTab: React.FC<DataTabProps> = ({ financialData, company }) => {
+  const isIndian =
+    company?.ticker?.endsWith('.NS') ||
+    company?.ticker?.endsWith('.BO') ||
+    company?.exchange === 'NSE' ||
+    company?.exchange === 'BSE' ||
+    company?.market?.toLowerCase() === 'india' ||
+    financialData?.quote?.currency === 'INR';
+
+  const currencySym = isIndian
+    ? '₹'
+    : financialData?.quote?.currency === 'EUR'
+    ? '€'
+    : financialData?.quote?.currency === 'GBP'
+    ? '£'
+    : '$';
   const [tooltipState, setTooltipState] = useState<{
     visible: boolean;
     x: number;
@@ -68,7 +84,7 @@ export const DataTab: React.FC<DataTabProps> = ({ financialData }) => {
       const v = mn + (range * k) / 3;
       return {
         y: getY(v),
-        label: `$${v.toFixed(0)}`,
+        label: `${currencySym}${v.toFixed(0)}`,
       };
     });
 
@@ -108,7 +124,7 @@ export const DataTab: React.FC<DataTabProps> = ({ financialData }) => {
       dateLabel = MONTHS[Math.floor((i / nPoints) * MONTHS.length)] || MONTHS[0];
     }
 
-    const text = `${dateLabel} · $${priceData[i].toFixed(2)}`;
+    const text = `${dateLabel} · ${currencySym}${priceData[i].toFixed(2)}`;
 
     setTooltipState({
       visible: true,
@@ -235,7 +251,7 @@ export const DataTab: React.FC<DataTabProps> = ({ financialData }) => {
 
       <div className="card">
         <h3>Revenue by year</h3>
-        <p className="sm mut">Verified filings in $B</p>
+        <p className="sm mut">Verified filings in {currencySym}B</p>
         <div id="rv">
           {revenueItems.map((item: RevenueYearItem) => {
             const widthPct = Math.min(100, Math.max(5, (item.amount / maxRevenue) * 100));
@@ -272,7 +288,13 @@ export const DataTab: React.FC<DataTabProps> = ({ financialData }) => {
                     data-w={widthPct}
                   />
                 </div>
-                <b>${item.amount}B</b>
+                <b>
+                  {item.formatted_amount
+                    ? (isIndian && item.formatted_amount.includes('$')
+                        ? item.formatted_amount.replace(/\$/g, '₹')
+                        : item.formatted_amount)
+                    : `${currencySym}${item.amount}B`}
+                </b>
               </div>
             );
           })}

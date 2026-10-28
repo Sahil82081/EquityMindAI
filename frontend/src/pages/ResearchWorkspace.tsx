@@ -139,7 +139,9 @@ export const ResearchWorkspace: React.FC<ResearchWorkspaceProps> = ({
               )}
               {activeTab === 'debate' && <DebateTab debate={researchData?.debate} />}
               {activeTab === 'claims' && <ClaimsTab claims={researchData?.claims} />}
-              {activeTab === 'data' && <DataTab financialData={financialData} />}
+              {activeTab === 'data' && (
+                <DataTab financialData={financialData} company={company} />
+              )}
 
               <ResearchCopilot
                 ticker={company?.ticker}

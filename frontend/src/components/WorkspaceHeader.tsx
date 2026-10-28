@@ -15,7 +15,24 @@ export const WorkspaceHeader: React.FC<WorkspaceHeaderProps> = ({
   onNewTicker,
 }) => {
   const isResearching = stage === 'loading';
-  const displayPrice = financialData?.quote?.formatted_price || '$228.40';
+
+  const isIndian =
+    company?.ticker?.endsWith('.NS') ||
+    company?.ticker?.endsWith('.BO') ||
+    company?.exchange === 'NSE' ||
+    company?.exchange === 'BSE' ||
+    company?.market?.toLowerCase() === 'india' ||
+    financialData?.quote?.currency === 'INR';
+
+  let displayPrice = financialData?.quote?.formatted_price;
+  if (displayPrice) {
+    if (isIndian && displayPrice.includes('$')) {
+      displayPrice = displayPrice.replace(/\$/g, '₹');
+    }
+  } else {
+    displayPrice = isIndian ? '₹2,460.00' : '$228.40';
+  }
+
   const displayChange = financialData?.quote?.formatted_change || '+2.41%';
   const isDown = financialData?.quote?.change_direction === 'down';
   const changeBadgeClass = isDown ? 'badge b-bad' : 'badge b-ok';
