@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>EquityMind AI</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&display=swap">
+<style>
+:root{--bg:#F5F6F8;--surf:#fff;--ink:#141A24;--mut:#5A6475;--line:#E2E5EB;--acc:#25467A;--acc2:#E8EEF8;--bull:#1D7A50;--bullbg:#E6F4EC;--bear:#B23B2B;--bearbg:#FBEAE7;--warn:#9A6A0A;--warnbg:#FBF1DC;--sh:0 1px 2px rgba(20,26,36,.05),0 4px 14px rgba(20,26,36,.04);--r:10px;--sans:"IBM Plex Sans",system-ui,sans-serif;--serif:"IBM Plex Serif",Georgia,serif;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F131A;--surf:#171C25;--ink:#E8ECF3;--mut:#98A2B3;--line:#273041;--acc:#8DB0EA;--acc2:#1D2940;--bull:#5BC48E;--bullbg:#14291F;--bear:#EE8D7E;--bearbg:#2E1A17;--warn:#E3B25A;--warnbg:#2C2413;--sh:0 1px 2px rgba(0,0,0,.3)}}
+:root[data-theme="dark"]{--bg:#0F131A;--surf:#171C25;--ink:#E8ECF3;--mut:#98A2B3;--line:#273041;--acc:#8DB0EA;--acc2:#1D2940;--bull:#5BC48E;--bullbg:#14291F;--bear:#EE8D7E;--bearbg:#2E1A17;--warn:#E3B25A;--warnbg:#2C2413;--sh:0 1px 2px rgba(0,0,0,.3)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 var(--sans);-webkit-font-smoothing:antialiased}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px;border-radius:6px}
+h1,h2,h3,p{margin:0}.serif{font-family:var(--serif)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+.btn{border:1px solid var(--line);background:var(--surf);border-radius:8px;padding:9px 16px;cursor:pointer;transition:background .15s,border-color .15s,transform .15s}
+.btn:hover{border-color:var(--acc)}.btn.pri{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:500}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn.pri{color:#0F131A}}
+.btn.pri:hover{transform:translateY(-1px)}
+.card{background:var(--surf);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:20px}
+.badge{display:inline-flex;gap:6px;align-items:center;font-size:12.5px;font-weight:500;padding:2px 9px;border-radius:99px}
+.b-ok{background:var(--bullbg);color:var(--bull)}.b-warn{background:var(--warnbg);color:var(--warn)}.b-bad{background:var(--bearbg);color:var(--bear)}.b-n{background:var(--acc2);color:var(--acc)}
+.mut{color:var(--mut)}.sm{font-size:13px}
+/* landing */
+#landing{min-height:100vh;display:grid;align-content:center;justify-items:center;text-align:center;padding:40px 20px;transition:opacity .35s,transform .35s}
+#landing.out{opacity:0;transform:translateY(-12px)}
+#landing h1{font:600 clamp(34px,6vw,52px)/1.08 var(--serif);letter-spacing:-.02em}
+#landing .sub{margin:14px 0 30px;color:var(--mut);font-size:18px;max-width:30em}
+.tick{display:flex;gap:8px;width:min(480px,100%)}
+.tick input{flex:1;min-width:0;padding:12px 14px;border-radius:8px;border:1px solid var(--line);background:var(--surf);font-size:16px;text-transform:uppercase;letter-spacing:.06em}
+.chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:16px}
+.chip{border:1px solid var(--line);background:transparent;border-radius:99px;padding:4px 12px;font-size:13px;cursor:pointer;color:var(--mut)}.chip:hover{color:var(--ink);border-color:var(--acc)}
+#err{color:var(--bear);margin-top:12px;min-height:22px;font-size:14px}
+.note{margin-top:34px;font-size:12.5px;color:var(--mut);max-width:34em}
+/* workspace */
+#ws{display:none}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;gap:18px;align-items:center;padding-top:12px;padding-bottom:12px;flex-wrap:wrap}
+.top .nm{font:600 20px/1.2 var(--serif)}.px{font:500 22px var(--serif);font-variant-numeric:tabular-nums}
+.sp{flex:1}
+.grid{display:grid;grid-template-columns:290px 1fr;gap:20px;padding:22px 0 60px;align-items:start}
+.rail{position:sticky;top:84px;display:grid;gap:16px}
+@media(max-width:900px){.grid{grid-template-columns:1fr}.rail{position:static}}
+/* pipeline */
+.pl{list-style:none;margin:0;padding:0}
+.ag{display:grid;grid-template-columns:28px 1fr;gap:10px;padding:8px 0;position:relative}
+.ag:not(:last-child)::after{content:"";position:absolute;left:13px;top:36px;bottom:-6px;width:1px;background:var(--line)}
+.dot{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-size:13px;color:var(--mut);background:var(--surf);transition:all .25s}
+.ag.run .dot{border-color:var(--acc);color:var(--acc);animation:pulse 1.3s ease-in-out infinite}
+.ag.done .dot{border-color:var(--bull);background:var(--bullbg);color:var(--bull)}
+.ag.rev .dot{border-color:var(--warn);background:var(--warnbg);color:var(--warn)}
+@keyframes pulse{50%{box-shadow:0 0 0 5px color-mix(in srgb,var(--acc) 18%,transparent)}}
+.ag b{font-weight:600;font-size:14px}.ag span.d{display:block;font-size:12.5px;color:var(--mut);line-height:1.4}
+.ag .bar{height:2px;background:var(--line);border-radius:2px;margin-top:5px;overflow:hidden;display:none}.ag.run .bar{display:block}.ag .bar i{display:block;height:100%;width:0;background:var(--acc)}
+.ag.run .bar i{animation:fill var(--t,900ms) linear forwards}@keyframes fill{to{width:100%}}
+/* loading */
+#loading{display:none;padding:70px 0;max-width:520px;margin:0 auto}
+#loading h2{font:600 24px var(--serif);margin-bottom:18px}
+.ls{display:flex;gap:10px;padding:7px 0;color:var(--mut);transition:color .2s}.ls.done,.ls.run{color:var(--ink)}
+/* score */
+.ring{position:relative;width:150px;height:150px;margin:6px auto 12px}
+.ring svg{transform:rotate(-90deg)}.ring .n{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
+.ring .n b{font:600 40px/1 var(--serif);font-variant-numeric:tabular-nums}.ring .n small{color:var(--mut)}
+.met{width:100%;text-align:left;background:none;border:0;padding:8px 0;cursor:pointer;border-top:1px solid var(--line)}
+.met .row{display:flex;justify-content:space-between;font-size:14px}.met .tr{height:4px;background:var(--line);border-radius:3px;margin-top:6px;overflow:hidden}.met .tr i{display:block;height:100%;background:var(--acc);width:0;transition:width .9s cubic-bezier(.2,.7,.2,1)}
+.met p{font-size:12.5px;color:var(--mut);max-height:0;overflow:hidden;transition:max-height .25s;margin-top:0}.met.open p{max-height:90px;margin-top:6px}
+/* tabs */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:18px;overflow-x:auto}
+.tab{background:none;border:0;padding:10px 14px;cursor:pointer;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tab[aria-selected=true]{color:var(--ink);border-color:var(--acc);font-weight:500}
+.pane{display:none;animation:in .25s ease}.pane.on{display:grid;gap:16px}@keyframes in{from{opacity:0;transform:translateY(6px)}}
+h3{font:600 17px var(--serif);margin-bottom:8px}
+.thesis{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+ul.l{margin:0;padding-left:18px}ul.l li{margin:5px 0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:700px){.two{grid-template-columns:1fr}}
+.snap{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.snap div{background:var(--surf);padding:12px}.snap small{color:var(--mut);display:block;font-size:12.5px}.snap b{font:500 18px var(--serif);font-variant-numeric:tabular-nums}
+/* debate */
+.deb{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--surf)}
+@media(max-width:700px){.deb{grid-template-columns:1fr}}
+.side{padding:20px}.side.bu{background:linear-gradient(var(--bullbg),transparent 140px)}.side.be{background:linear-gradient(var(--bearbg),transparent 140px);border-left:1px solid var(--line)}
+@media(max-width:700px){.side.be{border-left:0;border-top:1px solid var(--line)}}
+.side h3{display:flex;justify-content:space-between;align-items:center}
+.arg{padding:10px 0;border-top:1px solid var(--line)}.arg:first-of-type{border-top:0}.arg p{margin-top:3px}.arg .ev{font-size:12.5px;color:var(--mut)}
+.conf{height:5px;background:var(--line);border-radius:3px;margin:4px 0 12px}.conf i{display:block;height:100%;border-radius:3px}
+.judge{border-left:3px solid var(--acc)}
+/* claims */
+.cl{border:1px solid var(--line);border-radius:var(--r);background:var(--surf)}
+.cl>button{width:100%;display:flex;gap:12px;align-items:center;text-align:left;background:none;border:0;padding:14px 16px;cursor:pointer}
+.cl>button span.t{flex:1}.cl .chev{transition:transform .2s;color:var(--mut)}.cl.open .chev{transform:rotate(90deg)}
+.cl .bd{display:grid;grid-template-rows:0fr;transition:grid-template-rows .25s}.cl.open .bd{grid-template-rows:1fr}
+.cl .bd>div{overflow:hidden}.chain{padding:0 16px 16px;display:grid;gap:8px}
+.st{border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:14px}.st small{display:block;color:var(--mut);font-size:12px;margin-bottom:2px}
+.st.code{font-variant-numeric:tabular-nums}
+/* chart */
+.chart{position:relative}.chart svg{width:100%;height:auto;display:block}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12.5px;padding:5px 9px;border-radius:6px;display:none;white-space:nowrap;transform:translate(-50%,-120%)}
+.draw{stroke-dasharray:1200;stroke-dashoffset:1200;animation:dr 1.1s ease forwards}@keyframes dr{to{stroke-dashoffset:0}}
+/* copilot */
+.ans{border-left:3px solid var(--acc);padding:2px 0 2px 14px;margin-top:12px;animation:in .25s ease}
+.pill{display:inline-block;margin:4px 6px 0 0}
+.state{padding:40px;text-align:center;color:var(--mut)}
+:root{--acc:#5B4BFF;--acc2:#ECE9FF;--g:linear-gradient(135deg,#4F46E5,#8B5CF6 55%,#EC4899);--bg:#F3F2FF;--line:#E0DDF5;--sh:0 1px 2px rgba(60,40,140,.06),0 10px 28px rgba(80,60,200,.09)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--acc:#A99BFF;--acc2:#241F4A;--bg:#0A0A18;--surf:#14142A;--line:#2A2850;--sh:0 10px 30px rgba(0,0,0,.35)}}
+body{background:radial-gradient(900px 500px at 8% -5%,rgba(139,92,246,.20),transparent 60%),radial-gradient(800px 500px at 100% 0,rgba(6,182,212,.16),transparent 60%),radial-gradient(700px 500px at 60% 100%,rgba(236,72,153,.12),transparent 60%),var(--bg);background-attachment:fixed}
+#landing{position:relative;overflow:hidden}#landing::before{content:"";position:absolute;inset:-10%;background:radial-gradient(420px 320px at 25% 30%,rgba(99,102,241,.40),transparent 70%),radial-gradient(380px 300px at 78% 25%,rgba(6,182,212,.34),transparent 70%),radial-gradient(420px 320px at 60% 85%,rgba(236,72,153,.28),transparent 70%);filter:blur(30px)}#landing>div{position:relative;z-index:1}
+#landing h1{font-size:clamp(40px,7vw,64px);background:var(--g);-webkit-background-clip:text;background-clip:text;color:transparent}
+.tick{padding:6px;background:var(--surf);border:1px solid var(--line);border-radius:14px;box-shadow:0 14px 40px rgba(91,75,255,.22)}.tick input{border:0;background:transparent}.tick input:focus{outline:none}
+.btn.pri{background:var(--g);border:0;color:#fff!important;box-shadow:0 6px 18px rgba(99,70,240,.38)}.btn.pri:hover{box-shadow:0 10px 24px rgba(99,70,240,.5)}
+.chip{background:var(--surf)}.chip:nth-child(5n+1):hover{border-color:#6366F1;color:#6366F1}.chip:nth-child(5n+2):hover{border-color:#10B981;color:#10B981}.chip:nth-child(5n+3):hover{border-color:#06B6D4;color:#06B6D4}.chip:nth-child(5n+4):hover{border-color:#F43F5E;color:#F43F5E}.chip:nth-child(5n):hover{border-color:#F59E0B;color:#F59E0B}
+.top{border-bottom:0;box-shadow:0 1px 0 var(--line)}.top::after{content:"";display:block;height:3px;background:var(--g)}
+.px{background:var(--g);-webkit-background-clip:text;background-clip:text;color:transparent}
+.card{position:relative;overflow:hidden}.rail .card::before,#p-report>.card:first-child::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--g)}
+.ag:nth-child(1){--c:#3B82F6}.ag:nth-child(2){--c:#06B6D4}.ag:nth-child(3){--c:#8B5CF6}.ag:nth-child(4){--c:#10B981}.ag:nth-child(5){--c:#F43F5E}.ag:nth-child(6){--c:#F59E0B}.ag:nth-child(7){--c:#6366F1}
+.dot{color:var(--c);border-color:color-mix(in srgb,var(--c) 40%,transparent);background:color-mix(in srgb,var(--c) 12%,var(--surf))}
+.ag.run .dot{border-color:var(--c);color:var(--c);animation:pu 1.3s ease-in-out infinite}@keyframes pu{50%{box-shadow:0 0 0 6px color-mix(in srgb,var(--c) 22%,transparent)}}
+.ag.done .dot{background:var(--c);border-color:var(--c);color:#fff}.ag.rev .dot{background:var(--warn);border-color:var(--warn);color:#fff}
+.ag .bar i{background:var(--c)}.ag:not(:last-child)::after{background:linear-gradient(var(--c),var(--line))}
+#arc{stroke:url(#rg);filter:drop-shadow(0 0 6px rgba(139,92,246,.45))}.ring .n b{background:var(--g);-webkit-background-clip:text;background-clip:text;color:transparent}
+.met:nth-child(1) .tr i{background:linear-gradient(90deg,#6366F1,#8B5CF6)}.met:nth-child(2) .tr i{background:linear-gradient(90deg,#10B981,#34D399)}.met:nth-child(3) .tr i{background:linear-gradient(90deg,#06B6D4,#22D3EE)}.met:nth-child(4) .tr i{background:linear-gradient(90deg,#F59E0B,#FBBF24)}
+.met .tr{height:6px}
+.tab[aria-selected=true]{color:var(--acc);border-image:var(--g) 1}
+.thesis .badge{background:var(--g);color:#fff}
+.snap{gap:10px;background:none;border:0}.snap div{border-radius:10px;border:1px solid var(--line)}.snap div:nth-child(4n+1){background:color-mix(in srgb,#6366F1 9%,var(--surf))}.snap div:nth-child(4n+2){background:color-mix(in srgb,#10B981 9%,var(--surf))}.snap div:nth-child(4n+3){background:color-mix(in srgb,#06B6D4 9%,var(--surf))}.snap div:nth-child(4n){background:color-mix(in srgb,#F59E0B 10%,var(--surf))}
+.side.bu{background:linear-gradient(160deg,color-mix(in srgb,var(--bull) 22%,var(--surf)),var(--surf) 65%)}.side.be{background:linear-gradient(200deg,color-mix(in srgb,var(--bear) 22%,var(--surf)),var(--surf) 65%)}
+.conf{height:7px}.side.bu .conf i{background:linear-gradient(90deg,#10B981,#34D399)!important}.side.be .conf i{background:linear-gradient(90deg,#F43F5E,#FB923C)!important}
+.judge{border-left:0;background:linear-gradient(var(--surf),var(--surf)) padding-box,var(--g) border-box;border:1.5px solid transparent}
+.cl{border-left:4px solid var(--bull)}.cl:nth-of-type(3){border-left-color:var(--warn)}.cl:nth-of-type(4){border-left-color:var(--bear)}
+.rb{background:var(--g)!important}
+.ans{border-left:3px solid;border-image:var(--g) 1}
+.ls.done span{color:var(--bull)}.ls.run span{color:var(--acc)}
+.sb{position:relative;width:min(520px,100%);text-align:left}.sb .tick{width:100%;align-items:center;gap:10px;padding:6px 14px}.sb .tick:focus-within{box-shadow:0 0 0 2px var(--acc),0 14px 40px rgba(91,75,255,.25)}.sb .tick input{padding:10px 0;font-size:16px;text-transform:none;letter-spacing:0}.ic{color:var(--mut);display:grid}
+.spin{width:16px;height:16px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--acc);opacity:0}.spin.on{opacity:1;animation:spn .7s linear infinite}@keyframes spn{to{transform:rotate(360deg)}}
+.dd{position:absolute;left:0;right:0;top:calc(100% + 8px);background:var(--surf);border:1px solid var(--line);border-radius:12px;box-shadow:0 18px 44px rgba(40,30,120,.22);z-index:20;max-height:340px;overflow:auto;opacity:0;transform:translateY(-6px);transition:opacity .15s,transform .15s}.dd.show{opacity:1;transform:none}
+.dh{padding:10px 16px;font-size:13px;color:var(--mut);border-bottom:1px solid var(--line)}.opt{padding:10px 16px;cursor:pointer;border-bottom:1px solid var(--line)}.opt:last-child{border:0}.opt[aria-selected=true],.opt:hover{background:var(--acc2)}.oh{display:flex;gap:10px;align-items:center;justify-content:space-between}.os{font-size:12.5px;color:var(--mut)}
+mark{background:color-mix(in srgb,var(--acc) 28%,transparent);color:inherit;border-radius:3px;padding:0 1px}.empty{padding:22px 16px;text-align:center}.empty p{color:var(--mut);font-size:14px;margin-top:2px}
+.selc{width:min(520px,100%);margin-top:16px;padding:16px 18px;border-radius:12px;display:flex;gap:14px;justify-content:space-between;align-items:center;flex-wrap:wrap;text-align:left;background:linear-gradient(var(--surf),var(--surf)) padding-box,var(--g) border-box;border:1.5px solid transparent;animation:in .25s ease}.selc[hidden]{display:none}.sa{display:flex;gap:8px;flex-wrap:wrap}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}.draw{stroke-dashoffset:0}}
+</style></head><body>
+<section id="landing"><div style="max-width:640px">
+<h1>EquityMind AI</h1><p class="sub">AI-powered equity research with evidence-backed reasoning.</p>
+<div class="sb" id="sbw"><div class="tick"><span class="ic" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></span><input id="t" role="combobox" aria-label="Search company or ticker" aria-expanded="false" aria-controls="dd" aria-autocomplete="list" placeholder="Search company or ticker…" autocomplete="off" spellcheck="false"><span class="spin" id="sp"></span></div><div class="dd" id="dd" role="listbox" hidden></div></div>
+<div class="chips" id="ex"></div><div id="sel" class="selc" hidden></div>
+<p class="note">Design preview. Every figure below is sample data for layout review and is not market data. In your app, <code>services/api</code> supplies live values.</p>
+</div></section>
+
+<section id="ws">
+<header class="top"><div class="wrap">
+<div><div class="nm" id="hn">–</div><div class="mut sm"><span id="ht"></span></div></div>
+<div class="px" id="hp"></div><span class="badge b-ok" id="hc"></span>
+<span class="mut sm" id="hu">Updated 3 min ago</span><span class="sp"></span>
+<span class="badge b-n" id="hs">Researching</span>
+<button class="btn sm" id="nw">New ticker</button></div></header>
+<div class="wrap">
+<div id="loading"><h2 id="lt"></h2><div id="ll"></div></div>
+<div class="grid" id="main" style="display:none">
+<aside class="rail">
+<div class="card"><h3 style="margin-bottom:4px">Agent pipeline</h3><ol class="pl" id="pl" aria-label="Agent pipeline"></ol></div>
+<div class="card"><h3 style="margin-bottom:0">Research reliability</h3><p class="sm mut">How well-supported this research is. Not a forecast of returns.</p>
+<div class="ring"><svg width="150" height="150" viewBox="0 0 150 150"><defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#06B6D4"/><stop offset=".5" stop-color="#8B5CF6"/><stop offset="1" stop-color="#EC4899"/></linearGradient></defs><circle cx="75" cy="75" r="64" fill="none" stroke="var(--line)" stroke-width="9"/><circle id="arc" cx="75" cy="75" r="64" fill="none" stroke="var(--acc)" stroke-width="9" stroke-linecap="round" stroke-dasharray="402" stroke-dashoffset="402" style="transition:stroke-dashoffset 1.1s cubic-bezier(.2,.7,.2,1)"/></svg><div class="n"><b id="sc">0</b><small>/ 100</small></div></div>
+<div id="mets"></div></div>
+</aside>
+<main>
+<div class="tabs" role="tablist" id="tabs"></div>
+<div class="pane" id="p-report" role="tabpanel"></div>
+<div class="pane" id="p-debate" role="tabpanel"></div>
+<div class="pane" id="p-claims" role="tabpanel"></div>
+<div class="pane" id="p-data" role="tabpanel"></div>
+<div class="card" style="margin-top:16px"><h3>Research copilot</h3><p class="sm mut" style="margin-bottom:8px">Ask about this report. Answers are anchored to the evidence above.</p>
+<div id="qs"></div><div id="qa" aria-live="polite"></div></div>
+</main></div></div></section>
+
+<script>
+const $=s=>document.querySelector(s),H=(e,h)=>e.innerHTML=h;
+const NAMES={AAPL:"Apple Inc.",NVDA:"NVIDIA Corporation",MSFT:"Microsoft Corporation",TSLA:"Tesla, Inc.",AMZN:"Amazon.com, Inc."};
+const AG=[["Data","Pulls prices and financial statements","▤"],["News","Scores recent headlines and sentiment","☰"],["Valuation","Compares multiples with history and peers","◈"],["Bull","Argues why the company is attractive","▲"],["Bear","Argues why the thesis could fail","▼"],["Judge","Weighs both sides and concludes","⚖"],["Verification","Checks each claim against source data","✓"]];
+const STEPS=["Financial data collected","News analyzed","Valuation analysis","Bull/Bear debate","Claim verification","Reliability scoring"];
+const MET=[["Evidence Quality",91,"How directly the cited figures come from filings and structured data rather than inference."],["Claim Verification",88,"Share of claims that were recomputed from source data and matched."],["Source Coverage",84,"How many of the required data types (financials, news, valuation inputs) were available."],["Agent Agreement",75,"How consistently independent research agents support the final thesis."]];
+const CLAIMS=[["Revenue increased 12% year over year.","ok",[["Source data","Previous revenue $100.0B · Current revenue $112.0B"],["Calculation","(112.0 − 100.0) ÷ 100.0 = 12.0%"]],"Matches reported figures."],
+["Operating margin expanded by roughly 150 basis points.","ok",[["Source data","Prior margin 28.4% · Current margin 29.9%"],["Calculation","29.9 − 28.4 = 1.5 pts"]],"Matches reported figures."],
+["The stock trades at a premium to its 5-year average multiple.","warn",[["Source data","Current P/E 31.2 · 5-year average 24.8 (derived from price history)"],["Calculation","31.2 ÷ 24.8 = 1.26×"]],"The premium is confirmed, but the 5-year average uses estimated historical EPS."],
+["Management guidance implies accelerating growth next year.","bad",[["Source data","No guidance figures found in the retrieved data"],["Calculation","None available"]],"No supporting data was retrieved. Treat as unverified."]];
+const BULL=[["Durable revenue growth","Revenue +12% YoY, ahead of the prior year","Source: income statement"],["Expanding margins","Operating margin up 1.5 pts","Source: income statement"],["Strong cash generation","Free cash flow supports buybacks","Source: cash-flow statement"]];
+const BEAR=[["Premium valuation","P/E 31.2 vs 24.8 five-year average","Source: price and EPS history"],["Slowing unit demand","News sentiment mixed on near-term volume","Source: 14 recent headlines"],["Concentration risk","Growth depends on a few product lines","Source: segment disclosure"]];
+const ANS={"Why is the valuation expensive?":"The stock trades at 31.2× earnings against a five-year average of 24.8×. Earnings growth of 12% does not fully close that gap, so returns depend on margins continuing to expand. Evidence: Claim 3 (partially verified).","What are the biggest risks?":"Valuation leaves little room for a growth miss, news sentiment on near-term demand is mixed, and revenue depends on a few product lines. The Bear agent rated its own confidence at 58%.","Show me the evidence behind the bullish thesis.":"Two of the three bull arguments rest on verified claims: revenue growth and margin expansion. The cash-flow argument has no linked claim yet, so it is weaker than it reads.","Challenge the current conclusion.":"The neutral-to-bullish call assumes margins keep expanding. If they flatten, the premium multiple has no support. The unsupported guidance claim should be removed or sourced before relying on it.","What changed in the financials?":"Revenue rose from $100.0B to $112.0B and operating margin from 28.4% to 29.9%. Valuation multiples also rose, so part of the price gain reflects re-rating rather than earnings."};
+let tk="",CO=null,timers=[];const RM=matchMedia("(prefers-reduced-motion:reduce)").matches;
+/* Company resolver: deterministic, no LLM. In the app this is one call to your resolver endpoint; this sample directory only demonstrates the UI. */
+const DIR=[["Apple Inc.","AAPL","NASDAQ","US","Technology"],["Apple Hospitality REIT, Inc.","APLE","NYSE","US","Real Estate"],["Apple Rush Company","APRU","OTC","US","Beverages"],["Microsoft Corporation","MSFT","NASDAQ","US","Technology"],["NVIDIA Corporation","NVDA","NASDAQ","US","Technology"],["Tesla, Inc.","TSLA","NASDAQ","US","Automotive"],["Amazon.com, Inc.","AMZN","NASDAQ","US","Consumer Cyclical"],["Alphabet Inc.","GOOGL","NASDAQ","US","Communication Services"],["Meta Platforms, Inc.","META","NASDAQ","US","Communication Services"],["Netflix, Inc.","NFLX","NASDAQ","US","Communication Services"],["Advanced Micro Devices, Inc.","AMD","NASDAQ","US","Technology"],["Taiwan Semiconductor Manufacturing","TSM","NYSE","Taiwan","Technology"],["Toyota Motor Corporation","TM","NYSE","Japan","Automotive"]].map(a=>({name:a[0],ticker:a[1],exchange:a[2],market:a[3],sector:a[4]}));
+const nz=s=>s.toLowerCase().replace(/[^a-z0-9 ]/g,"").trim(),esc=s=>s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+function lev(a,b){const m=[...Array(b.length+1).keys()];for(let i=1;i<=a.length;i++){let p=m[0];m[0]=i;for(let j=1;j<=b.length;j++){const t=m[j];m[j]=Math.min(m[j]+1,m[j-1]+1,p+(a[i-1]===b[j-1]?0:1));p=t}}return m[b.length]}
+function resolve(q){q=nz(q);if(!q)return{r:[],fuzzy:false};
+ const out=DIR.map(c=>{const n=nz(c.name),t=c.ticker.toLowerCase(),w=n.split(" ");let s=0;if(t===q)s=100;else if(n.startsWith(q))s=90;else if(t.startsWith(q))s=80;else if(w.some(x=>x.startsWith(q)))s=70;else if(n.includes(q))s=50;return{c,s}}).filter(x=>x.s).sort((a,b)=>b.s-a.s);
+ if(out.length)return{r:out.map(x=>x.c).slice(0,6),fuzzy:false};
+ if(q.length<3)return{r:[],fuzzy:false};const tol=q.length>=5?2:1;
+ const f=DIR.map(c=>{const ws=nz(c.name).split(" ").filter(x=>x.length>1);return{c,d:Math.min(...ws.map(w=>Math.min(lev(q,w),lev(q,w.slice(0,q.length)))),q.length>=4?lev(q,c.ticker.toLowerCase()):9)}}).filter(x=>x.d<=tol).sort((a,b)=>a.d-b.d);
+ return{r:f.map(x=>x.c).slice(0,4),fuzzy:true}}
+function hl(t,q){q=q.trim();const i=q?t.toLowerCase().indexOf(q.toLowerCase()):-1;return i<0?esc(t):esc(t.slice(0,i))+"<mark>"+esc(t.slice(i,i+q.length))+"</mark>"+esc(t.slice(i+q.length))}
+let res=[],act=-1,tok=0,SEL=null;const T=$("#t"),DD=$("#dd");
+const recents=()=>{try{return JSON.parse(localStorage.getItem("em_recent")||"[]")}catch(e){return[]}};
+const saveRecent=c=>{try{localStorage.setItem("em_recent",JSON.stringify([c,...recents().filter(x=>x.ticker!==c.ticker)].slice(0,3)))}catch(e){}};
+function open(h){DD.innerHTML=h;DD.hidden=false;requestAnimationFrame(()=>DD.classList.add("show"));T.setAttribute("aria-expanded","true")}
+function close(){DD.classList.remove("show");DD.hidden=true;T.setAttribute("aria-expanded","false");act=-1}
+const item=(c,i,q)=>`<div class="opt" role="option" id="o${i}" data-i="${i}" aria-selected="false"><div class="oh"><b>${hl(c.name,q)}</b><span class="badge b-n">${hl(c.ticker,q)}</span></div><div class="os">${c.exchange} · ${c.market} · ${c.sector}</div></div>`;
+function show(list,q,head){res=list;act=-1;open((head?`<div class="dh">${head}</div>`:"")+list.map((c,i)=>item(c,i,q)).join(""))}
+function search(){SEL=null;$("#sel").hidden=true;const q=T.value;
+ if(!q.trim()){tok++;$("#sp").classList.remove("on");const r=recents();if(r.length)show(r,"","Recent searches");else close();return}
+ const my=++tok;res=[];$("#sp").classList.add("on");open(`<div class="dh">Searching…</div>`);
+ setTimeout(()=>{if(my!==tok)return;$("#sp").classList.remove("on");const{r,fuzzy}=resolve(q);
+  if(!r.length){res=[];open(`<div class="empty"><b>No company found</b><p>Try searching by company name or ticker.</p></div>`);return}
+  show(r,fuzzy?"":q,fuzzy?`Did you mean ${esc(r[0].name)} (${r[0].ticker})?`:r.length>1?`${r.length} companies match. Select one.`:"")},RM?0:220)}
+function pick(c){SEL=c;tok++;$("#sp").classList.remove("on");T.value=c.name;close();const s=$("#sel");s.hidden=false;
+ H(s,`<div><b class="serif" style="font-size:19px">${esc(c.name)}</b><div class="mut sm">${c.ticker} · ${c.exchange} · ${c.market} · ${c.sector}</div></div><div class="sa"><button type="button" class="btn sm" id="chg">Change company</button><button type="button" class="btn pri" id="go">Start AI research →</button></div>`);
+ $("#chg").onclick=()=>{T.value="";T.focus();search()};$("#go").onclick=()=>{saveRecent(c);start(c)};$("#go").focus()}
+function resetSel(){SEL=null;tok++;T.value="";$("#sel").hidden=true;close()}
+T.oninput=search;T.onfocus=()=>{if(!SEL)search()};
+T.onkeydown=e=>{const n=res.length,k=e.key;
+ if(k==="Escape"){close();return}
+ if(k==="ArrowDown"){e.preventDefault();if(DD.hidden&&!SEL){search();return}if(n)act=(act+1)%n}
+ else if(k==="ArrowUp"){e.preventDefault();if(n)act=(act-1+n)%n}
+ else if(k==="Enter"){e.preventDefault();if(SEL){$("#go").click();return}if(act>=0){pick(res[act]);return}if(n===1){pick(res[0]);return}if(n)act=0}
+ else return;
+ DD.querySelectorAll(".opt").forEach((o,i)=>o.setAttribute("aria-selected",i===act));if(act>=0){T.setAttribute("aria-activedescendant","o"+act);const o=DD.querySelector("#o"+act);o&&o.scrollIntoView({block:"nearest"})}};
+DD.onmousedown=e=>{const o=e.target.closest(".opt");if(o){e.preventDefault();pick(res[+o.dataset.i])}};
+document.addEventListener("click",e=>{if(!$("#sbw").contains(e.target))close()});
+H($("#ex"),["Apple","Microsoft","Nvidia","Tesla","Amazon","AAPL"].map(x=>`<button class="chip" type="button">${x}</button>`).join(""));
+$("#ex").onclick=e=>{if(e.target.matches(".chip")){T.value=e.target.textContent;T.focus();search()}};
+$("#nw").onclick=()=>{timers.forEach(clearTimeout);$("#ws").style.display="none";const l=$("#landing");l.style.display="grid";l.classList.remove("out");resetSel();$("#t").focus()};
+function start(c){CO=c;tk=c.ticker;const l=$("#landing");l.classList.add("out");
+ setTimeout(()=>{l.style.display="none";$("#ws").style.display="block";scrollTo(0,0);run()},RM?0:300)}
+function run(){const nm=CO.name;$("#hn").textContent=nm;$("#ht").textContent=tk+" · "+CO.exchange;$("#hp").textContent="$228.40";$("#hc").textContent="+2.41%";
+ $("#hs").className="badge b-n";$("#hs").textContent="Researching";$("#main").style.display="none";$("#loading").style.display="block";
+ $("#lt").textContent=`EquityMind is researching ${tk}…`;const dur=RM?60:850;
+ const ls=i=>`<div class="ls" id="ls${i}"><span>○</span>${STEPS[i]}</div>`;H($("#ll"),STEPS.map((_,i)=>ls(i)).join(""));
+ const pl=AG.map((a,i)=>`<li class="ag" id="ag${i}"><div class="dot">${a[2]}</div><div><b>${a[0]}</b><span class="d">${a[1]}</span><div class="bar"><i style="--t:${dur}ms"></i></div></div></li>`).join("");H($("#pl"),pl);
+ const set=(i,s)=>{const e=$("#ag"+i);if(e)e.className="ag "+s};
+ const lst=(i,s)=>{const e=$("#ls"+i);if(!e)return;e.className="ls "+s;e.firstChild.textContent=s==="done"?"✓":s==="run"?"◐":"○"};
+ const seq=[[0],[1],[2],[3,4],[5],[6]];let t=0;
+ seq.forEach((g,si)=>{timers.push(setTimeout(()=>{g.forEach(i=>set(i,"run"));lst(si,"run")},t));t+=dur;
+  timers.push(setTimeout(()=>{g.forEach(i=>set(i,i===6?"rev":"done"));lst(si,"done")},t))});
+ timers.push(setTimeout(done,t+250))}
+function done(){$("#loading").style.display="none";$("#main").style.display="grid";$("#hs").className="badge b-warn";$("#hs").textContent="⚠ Needs review";
+ build();anim()}
+function build(){
+ H($("#tabs"),[["report","Report"],["debate","Bull vs Bear"],["claims","Claims (4)"],["data","Data"]].map((t,i)=>`<button class="tab" role="tab" id="tb-${t[0]}" aria-selected="${i==0}" data-t="${t[0]}">${t[1]}</button>`).join(""));
+ $("#tabs").onclick=e=>{const b=e.target.closest(".tab");if(b)tab(b.dataset.t)};
+ $("#tabs").onkeydown=e=>{const a=[...document.querySelectorAll(".tab")],i=a.indexOf(document.activeElement);if(i<0)return;if(e.key==="ArrowRight"){a[(i+1)%a.length].focus();a[(i+1)%a.length].click()}if(e.key==="ArrowLeft"){a[(i+a.length-1)%a.length].focus();a[(i+a.length-1)%a.length].click()}};
+ const sec=(t,b,o)=>`<details class="card" ${o?"open":""}><summary style="cursor:pointer;list-style:none"><h3 style="display:inline">${t}</h3></summary><div style="margin-top:8px">${b}</div></details>`;
+ const li=a=>`<ul class="l">${a.map(x=>`<li>${x}</li>`).join("")}</ul>`;
+ H($("#p-report"),`<div class="card"><div class="thesis"><h3 style="margin:0">Investment thesis</h3><span class="badge b-warn">Neutral, leaning bullish</span></div><p>Sample summary: ${tk} shows steady revenue growth and rising margins, but its premium valuation leaves little room for a miss. The Judge found the bull case better supported by data, and the bear case stronger on price.</p></div>
+ <div class="two"><div class="card"><h3>Key strengths</h3>${li(["Revenue up 12% year over year (verified)","Operating margin up 1.5 pts (verified)","Cash generation funds buybacks"])}</div><div class="card"><h3>Key risks</h3>${li(["P/E 26% above its 5-year average","Mixed near-term demand sentiment","Growth concentrated in few product lines"])}</div></div>
+ <div class="card"><h3>Financial snapshot</h3><div class="snap">${[["Revenue","$112.0B"],["Net profit","$26.4B"],["EPS","$7.32"],["P/E","31.2"],["Market cap","$3.5T"],["Op. margin","29.9%"],["Revenue growth","+12.0%"],["Net margin","23.6%"]].map(x=>`<div><small>${x[0]}</small><b>${x[1]}</b></div>`).join("")}</div></div>
+ ${sec("Final conclusion","<p>Attractive business at a full price. The research supports holding exposure while treating the guidance claim as unproven. This is research output, not investment advice.</p>",1)}`);
+ const side=(c,t,ic,a,cf,m,col)=>`<div class="side ${c}"><h3>${ic} ${t}<span class="badge ${c==="bu"?"b-ok":"b-bad"}">${cf}% confidence</span></h3><div class="conf"><i style="width:${cf}%;background:${col}"></i></div>${a.map(x=>`<div class="arg"><b>${x[0]}</b><p>${x[1]}</p><div class="ev">${x[2]}</div></div>`).join("")}<p class="sm mut" style="margin-top:8px">Key metrics: ${m}</p></div>`;
+ H($("#p-debate"),`<div class="deb">${side("bu","Bull case","🐂",BULL,72,"Rev +12%, margin 29.9%","var(--bull)")}${side("be","Bear case","🐻",BEAR,58,"P/E 31.2, avg 24.8","var(--bear)")}</div>
+ <div class="card judge"><h3>Judge’s conclusion</h3><p>The bull case wins on evidence: two of its three arguments are backed by verified claims, while the bear case rests on one verified multiple and one inference from headlines. The bear argument on valuation is still valid and sets the thesis to neutral-leaning-bullish rather than bullish.</p></div>`);
+ H($("#p-claims"),`<p class="sm mut">Each claim is linked to source data and a recomputed calculation. Select a claim to see the chain.</p>`+CLAIMS.map((c,i)=>{const m={ok:["✓ Verified","b-ok"],warn:["⚠ Partially verified","b-warn"],bad:["✕ Unsupported","b-bad"]}[c[1]];
+ return `<div class="cl ${i==0?"open":""}"><button aria-expanded="${i==0}"><span class="chev">▸</span><span class="t">${c[0]}</span><span class="badge ${m[1]}">${m[0]}</span></button><div class="bd"><div><div class="chain"><div class="st"><small>Claim</small>${c[0]}</div><div class="st code"><small>${c[2][0][0]}</small>${c[2][0][1]}</div><div class="st code"><small>${c[2][1][0]}</small>${c[2][1][1]}</div><div class="st"><small>Result</small>${c[3]}</div></div></div></div></div>`}).join(""));
+ $("#p-claims").onclick=e=>{const b=e.target.closest(".cl>button");if(!b)return;const c=b.parentNode;c.classList.toggle("open");b.setAttribute("aria-expanded",c.classList.contains("open"))};
+ H($("#p-data"),`<div class="card"><h3>Price history</h3><p class="sm mut">Sample series, 12 months</p><div class="chart" id="ch"></div></div><div class="card"><h3>Revenue by year</h3><p class="sm mut">Sample figures in $B</p><div id="rv"></div></div>`);
+ H($("#mets"),MET.map((m,i)=>`<button class="met" aria-expanded="false"><div class="row"><span>${m[0]}</span><b>${m[1]}%</b></div><div class="tr"><i data-w="${m[1]}"></i></div><p>${m[2]}</p></button>`).join(""));
+ document.querySelectorAll(".met").forEach(b=>b.onclick=()=>{b.classList.toggle("open");b.setAttribute("aria-expanded",b.classList.contains("open"))});
+ H($("#qs"),Object.keys(ANS).map(q=>`<button class="chip pill" type="button">${q}</button>`).join(""));
+ $("#qs").onclick=e=>{if(!e.target.matches(".chip"))return;const q=e.target.textContent;$("#qa").insertAdjacentHTML("afterbegin",`<div class="ans"><b>${q}</b><p>${ANS[q]}</p><p class="sm mut">Sample answer</p></div>`)};
+ tab("report");chart();rev()}
+function tab(t){document.querySelectorAll(".pane").forEach(p=>p.classList.toggle("on",p.id==="p-"+t));document.querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-selected",b.dataset.t===t))}
+function chart(){const W=640,Hh=240,P=36,n=60;let s=7,y=170;const d=[];for(let i=0;i<n;i++){s=(s*9301+49297)%233280;y+=(s/233280-.42)*5;d.push(y)}
+ const mn=Math.min(...d),mx=Math.max(...d),X=i=>P+i*(W-P-8)/(n-1),Y=v=>Hh-24-(v-mn)/(mx-mn)*(Hh-50);
+ const pts=d.map((v,i)=>`${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(" ");
+ const g=[0,1,2,3].map(k=>{const v=mn+(mx-mn)*k/3;return `<line x1="${P}" x2="${W}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${P-6}" y="${Y(v)+4}" text-anchor="end" font-size="11" fill="var(--mut)">$${v.toFixed(0)}</text>`}).join("");
+ H($("#ch"),`<svg viewBox="0 0 ${W} ${Hh}" role="img" aria-label="Sample 12-month price line chart"><defs><linearGradient id="lg" x1="0" x2="1"><stop offset="0" stop-color="#06B6D4"/><stop offset=".55" stop-color="#8B5CF6"/><stop offset="1" stop-color="#EC4899"/></linearGradient><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8B5CF6" stop-opacity=".32"/><stop offset="1" stop-color="#8B5CF6" stop-opacity="0"/></linearGradient></defs>${g}<polygon points="${P},${Hh-24} ${pts} ${X(n-1)},${Hh-24}" fill="url(#ag)"/><polyline class="draw" points="${pts}" fill="none" stroke="url(#lg)" stroke-width="2.5" stroke-linejoin="round"/><line id="cx" y1="10" y2="${Hh-24}" stroke="var(--mut)" stroke-dasharray="3 3" style="display:none"/><circle id="cd" r="4" fill="var(--acc)" style="display:none"/></svg><div class="tip" id="tp"></div>`);
+ const sv=$("#ch svg"),mo=["Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct"];
+ sv.onpointermove=e=>{const r=sv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*W,i=Math.max(0,Math.min(n-1,Math.round((x-P)*(n-1)/(W-P-8))));
+  $("#cx").setAttribute("x1",X(i));$("#cx").setAttribute("x2",X(i));$("#cx").style.display="";const c=$("#cd");c.setAttribute("cx",X(i));c.setAttribute("cy",Y(d[i]));c.style.display="";
+  const t=$("#tp");t.style.display="block";t.style.left=X(i)/W*r.width+"px";t.style.top=Y(d[i])/Hh*r.height+"px";t.textContent=`${mo[Math.floor(i/5)]} · $${d[i].toFixed(2)}`};
+ sv.onpointerleave=()=>{["#cx","#cd","#tp"].forEach(s=>$(s).style.display="none")}}
+function rev(){const v=[[2021,78],[2022,86],[2023,100],[2024,112]],mx=120;
+ H($("#rv"),v.map(x=>`<div style="display:grid;grid-template-columns:44px 1fr 56px;gap:10px;align-items:center;margin:8px 0;font-variant-numeric:tabular-nums"><span class="mut sm">${x[0]}</span><div style="height:12px;background:var(--line);border-radius:3px;overflow:hidden"><i class="rb" style="display:block;height:100%;width:0;background:var(--acc);transition:width .8s ease" data-w="${x[1]/mx*100}"></i></div><b>$${x[1]}B</b></div>`).join(""))}
+function anim(){requestAnimationFrame(()=>{$("#arc").style.strokeDashoffset=402*(1-.84);document.querySelectorAll(".tr i,.rb").forEach(e=>e.style.width=e.dataset.w+"%");
+ const el=$("#sc"),T=RM?1:1100,t0=performance.now();(function f(t){const p=Math.min(1,(t-t0)/T);el.textContent=Math.round(84*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(f)})(t0)})}
+</script></body></html>

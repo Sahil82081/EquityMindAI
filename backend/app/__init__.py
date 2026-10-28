@@ -1,0 +1,1 @@
+"""EquityMind AI Backend Package."""
