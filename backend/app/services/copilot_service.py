@@ -60,7 +60,7 @@ def answer_copilot_question(request: CopilotRequest) -> CopilotResponse:
             answer=(
                 "No active research report is available for this session. "
                 "Please search for a company (e.g. Apple, Microsoft, Nvidia) and run research "
-                "to generate the verified evidence base before querying the Copilot."
+                "to generate the verified evidence base before querying Research Q&A."
             ),
             ticker=request.ticker,
             sources_cited=[],
@@ -234,7 +234,7 @@ def answer_copilot_question(request: CopilotRequest) -> CopilotResponse:
     # -----------------------------------------------------------------
     if llm_service._client:
         prompt = (
-            f"You are the EquityMind Research Copilot.\n"
+            f"You are the EquityMind Research Analyst.\n"
             f"Answer the user's question regarding {company.name} ({company.ticker}) STRICTLY using the research facts below.\n\n"
             f"RESEARCH CONTEXT:\n"
             f"- Price: {price_str}, Trailing P/E: {pe_str}, Historical Benchmark: {bench_str}\n"

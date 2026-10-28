@@ -25,7 +25,7 @@ export const ResearchCopilot: React.FC<ResearchCopilotProps> = ({ ticker, resear
 
   return (
     <div className="card" style={{ marginTop: '16px' }}>
-      <h3>Research copilot</h3>
+      <h3>Research Q&A</h3>
       <p className="sm mut" style={{ marginBottom: '8px' }}>
         Ask about this report. Answers are anchored to the evidence above.
       </p>

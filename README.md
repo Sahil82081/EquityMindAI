@@ -1,6 +1,6 @@
 # EquityMind AI 🧠📈
 
-> **Autonomous Multi-Agent Investment Intelligence, Claim-Evidence Verification, and Grounded Research Copilot**
+> **Autonomous Multi-Agent Investment Intelligence, Claim-Evidence Verification, and Grounded Research Q&A**
 
 EquityMind AI is an institutional-grade investment research platform that replaces ungrounded AI chat with an auditable, deterministic multi-agent research pipeline. Every fundamental metric is calculated in Python, every narrative claim is audited against filings and market data, adversarial Bull and Bear perspectives are adjudicated by an impartial Judge agent, and overall research integrity is scored using a deterministic formula.
 
@@ -16,7 +16,7 @@ EquityMind AI is an institutional-grade investment research platform that replac
   - [Research Reliability Score](#2-research-reliability-score)
 - [Project Directory Structure](#-project-directory-structure)
 - [API Reference](#-api-reference)
-- [Grounded Research Copilot](#-grounded-research-copilot)
+- [Grounded Research Q&A](#-grounded-research-qa)
 - [Getting Started](#-getting-started)
   - [Prerequisites](#prerequisites)
   - [Backend Setup](#1-backend-setup)
@@ -36,7 +36,7 @@ EquityMind AI is an institutional-grade investment research platform that replac
 - **Adversarial Debate System**: Parallel **Bull Agent** and **Bear Agent** formulate evidence-backed investment arguments, which are then evaluated and synthesized by an impartial **Judge Agent**.
 - **Claim $\rightarrow$ Evidence Verification System**: Audits every key generated assertion against raw filing numbers, calculating percentage changes and tagging claims as **Verified**, **Partially Verified**, or **Unsupported**.
 - **Research Reliability Score**: A deterministic $0-100$ score derived from four measurable dimensions: Evidence Quality ($30\%$), Claim Verification ($30\%$), Source Coverage ($20\%$), and Agent Agreement ($20\%$).
-- **Grounded Research Copilot**: A conversational intelligence interface strictly bound to the active research session, citing verified claims and refusing ungrounded speculative stock price predictions.
+- **Grounded Research Q&A**: A conversational intelligence interface strictly bound to the active research session, citing verified claims and refusing ungrounded speculative stock price predictions.
 - **Premium Financial Terminal UI**: Built with React 19, TypeScript, and Vite featuring interactive radial gauges, tabbed dossiers, and real-time pipeline monitoring.
 
 ---
@@ -333,9 +333,9 @@ Retrieves an existing research state by its unique `research_id`.
 
 ---
 
-## 🤖 Grounded Research Copilot
+## 💬 Grounded Research Q&A
 
-The Copilot is strictly grounded in the research state of the selected company:
+The Research Q&A interface is strictly grounded in the research state of the selected company:
 
 ### Supported Queries
 - **"Why is the valuation expensive?"**: Retrieves valuation multiples, compares them against historical baselines, and cites Bear Agent arguments.
