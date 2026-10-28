@@ -9,15 +9,15 @@ interface ResearchCopilotProps {
 }
 
 export const ResearchCopilot: React.FC<ResearchCopilotProps> = ({ ticker, researchId }) => {
-  const [history, setHistory] = useState<CopilotQAItem[]>([]);
+  const [currentQA, setCurrentQA] = useState<CopilotQAItem | null>(null);
   const [loadingQuestion, setLoadingQuestion] = useState<string | null>(null);
 
   const handleAskQuestion = async (questionText: string) => {
     setLoadingQuestion(questionText);
     try {
       const qaItem = await askCopilot(questionText, ticker, researchId);
-      // Prepend new answer to the list, matching prototype's insertAdjacentHTML("afterbegin")
-      setHistory((prev) => [qaItem, ...prev]);
+      // Show ONLY the current question's answer (replaces previous answer)
+      setCurrentQA(qaItem);
     } finally {
       setLoadingQuestion(null);
     }
@@ -31,27 +31,31 @@ export const ResearchCopilot: React.FC<ResearchCopilotProps> = ({ ticker, resear
       </p>
 
       <div id="qs">
-        {COPILOT_QUESTIONS.map((item) => (
-          <button
-            key={item.question}
-            className="chip pill"
-            type="button"
-            disabled={loadingQuestion === item.question}
-            onClick={() => handleAskQuestion(item.question)}
-          >
-            {loadingQuestion === item.question ? 'Synthesizing…' : item.question}
-          </button>
-        ))}
+        {COPILOT_QUESTIONS.map((item) => {
+          const isSelected = currentQA?.question === item.question;
+          const isLoading = loadingQuestion === item.question;
+          return (
+            <button
+              key={item.question}
+              className={`chip pill ${isSelected ? 'active' : ''}`}
+              type="button"
+              disabled={isLoading}
+              onClick={() => handleAskQuestion(item.question)}
+            >
+              {isLoading ? 'Synthesizing…' : item.question}
+            </button>
+          );
+        })}
       </div>
 
       <div id="qa" aria-live="polite">
-        {history.map((item, idx) => (
-          <div key={`${item.question}-${idx}`} className="ans">
-            <b>{item.question}</b>
-            <p>{item.answer}</p>
+        {currentQA && (
+          <div key={currentQA.question} className="ans">
+            <b>{currentQA.question}</b>
+            <p>{currentQA.answer}</p>
             <p className="sm mut">Anchored to research evidence</p>
           </div>
-        ))}
+        )}
       </div>
     </div>
   );

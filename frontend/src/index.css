@@ -430,6 +430,13 @@ mark {
   border-color: var(--acc);
 }
 
+.chip.active {
+  border-color: var(--acc);
+  color: var(--acc);
+  background: var(--acc2);
+  font-weight: 500;
+}
+
 .chip:nth-child(5n+1):hover {
   border-color: #6366F1;
   color: #6366F1;
