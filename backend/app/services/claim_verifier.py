@@ -273,13 +273,17 @@ class ClaimVerifier:
             else "5-Year Average: ~24.8x"
         )
 
-        statement = f"The stock trades at a premium multiple of {pe_str} P/E against its 5-year average baseline of {bench_str}."
-
         pe_num = _parse_float(pe_str) or 31.2
         bench_num = _parse_float(bench_str) or 24.8
 
+        is_premium = pe_num >= bench_num
+        term = "premium" if is_premium else "discount"
+        clean_bench = f"{bench_num:.1f}x"
+
+        statement = f"The stock trades at a {term} multiple of {pe_str} P/E against its 5-year average baseline of {clean_bench}."
+
         ratio = pe_num / bench_num if bench_num > 0 else 1.26
-        source_str = f"Current P/E {pe_str} · 5-year baseline {bench_str} (derived from price and EPS history)"
+        source_str = f"Current P/E {pe_str} · 5-year baseline {clean_bench} (derived from price and EPS history)"
         calc_str = f"{pe_num:.1f} / {bench_num:.1f} = {ratio:.2f}x"
 
         evidence = Evidence(
@@ -317,7 +321,7 @@ class ClaimVerifier:
             evidence=evidence,
             verification_result=verification_result,
             proofs=proofs,
-            result="The premium is confirmed, but the 5-year average uses estimated historical EPS.",
+            result=f"The {term} is confirmed, but the 5-year average uses estimated historical EPS.",
         )
 
     def _verify_forward_guidance_claim(
