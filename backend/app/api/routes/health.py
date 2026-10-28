@@ -4,6 +4,7 @@ router = APIRouter()
 
 
 @router.get("/health", summary="Health check endpoint")
+@router.head("/health", include_in_schema=False)
 def health_check():
     return {
         "status": "healthy",

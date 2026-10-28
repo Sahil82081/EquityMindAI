@@ -31,6 +31,7 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 
 
 @app.get("/")
+@app.head("/", include_in_schema=False)
 def root():
     return {
         "message": f"Welcome to {settings.PROJECT_NAME}",
